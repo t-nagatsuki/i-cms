@@ -60,13 +60,18 @@ class BaseHandler(web.RequestHandler):
 		self.admin_page = False
 		self.lock = threading.Lock()
 		
-		# DB制御
-		self.ctrl_db = ControlDB(self.ctrl_define)
-
 		# 汎用パラメータ
 		self.prm_cmn = OrderedDict()
 		# GETパラメータ
 		self.prm_get = OrderedDict()
+
+	def prepare(self):
+		"""
+		リクエスト前処理
+		"""
+
+		# DB制御
+		self.ctrl_db = ControlDB(self.ctrl_define)
 
 		# 基本設定読込
 		self.prm_cmn["use_ssl"] = options.ssl

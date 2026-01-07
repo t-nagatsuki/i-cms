@@ -66,6 +66,7 @@
 	</div>
 	<div class="col s12" id="tab2">
 		<form action="." name="m_frm" method="post">
+			{% module xsrf_form_html() %}
 			<input type="hidden" name="page" />
 			<input type="hidden" name="view_tab" id="target_tab" value="{{ prm_req.get("view_tab", "tab1") }}" />
 			<input type="hidden" name="target_user_id" />
