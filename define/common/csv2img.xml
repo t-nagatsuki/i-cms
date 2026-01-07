@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<data>
+	<img id="1" name="Sample" size="A3" template="static/pdf/sample1.png,static/pdf/sample2.png">
+		<input_file id="1" file="sample.csv" key="0" />
+		<prot file="1">
+			<d id="1" key="2" value="R001" />
+			<d id="2" key="2" value="R002" />
+			
+			<p type="font" size="10" />
+			<p type="data" data="1" row="0" col="7" x="60" y="764" />
+
+			<p type="page" />
+			<p type="font" size="10" />
+			<p type="data" data="1" row="0" col="7" x="60" y="764" />
+			<p type="array_y" data="5" col="10" x="576" y="779" offset="3" />
+			<p type="color" r="1" g="0" b="0" />
+			<p type="array_y" data="6" col="7" x="157" y="370" offset="3" />
+		</prot>
+	</img>
+</data>

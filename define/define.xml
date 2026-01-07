@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<data>
+	<!-- 共通定義 -->
+	<define id="auth" name="権限管理" path="common/auth.xml" />
+	<define id="database" name="DB管理" path="common/database.xml" />
+	<define id="user" name="標準ユーザ管理" path="common/user.xml" />
+	<define id="csv2img" name="画像出力管理" path="common/csv2img.xml" />
+	<define id="message_lv" name="メッセージレベル管理" path="common/message_level.xml" />
+	<define id="message" name="メッセージ管理" path="common/message.xml" />
+</data>

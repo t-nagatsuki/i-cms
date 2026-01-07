@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<data>
+	<page id="regist_account">
+		<obj tag="form" name="b_frm" method="post">
+			<obj tag="input" type="hidden" name="page" />
+		</obj>
+		<obj tag="form" name="m_frm" method="post">
+			<obj tag="input" type="hidden" name="page" />
+			<obj tag="div" class="row" style="margin-bottom: 10px;">
+				<obj tag="div" class="col s12" />
+			</obj>
+
+			<obj tag="div" class="row" style="margin-bottom: 0px;">
+				<obj tag="div" class="input-field col s1" />
+				<obj tag="div" class="input-field col s10 m5">
+					<obj tag="input" type="text" id="user_id" name="user_id" class="validate" value="{{ prm_req.get('user_id', '') }}" data-length="20" />
+					<obj tag="label" for="user_id" html="User ID" />
+				</obj>
+				<obj tag="div" class="input-field col s1 show-on-small hide-on-med-and-up" />
+				<obj tag="div" class="input-field col s10 m5 offset-s1">
+					<obj tag="input" type="password" id="input_password" name="input_password" class="validate" value="{{ prm_req.get('input_password', '') }}" />
+					<obj tag="label" for="input_password" html="Password" />
+				</obj>
+				<obj tag="div" class="input-field col s1" />
+			</obj>
+			<obj tag="div" class="row" style="margin-top: 0px;">
+				<obj tag="div" class="input-field col s1" />
+				<obj tag="div" class="input-field col s10 m5">
+					<obj tag="input" type="text" id="user_name" name="user_name" class="validate" value="{{ prm_req.get('user_name', '') }}" data-length="20" />
+					<obj tag="label" for="user_name" html="User Name" />
+				</obj>
+				<obj tag="div" class="input-field col s1 m6" />
+			</obj>
+			
+			<obj tag="div" class="row">
+				<obj tag="div" class="col s3" />
+				<obj tag="div" class="col s3 center-align">
+					<obj tag="a" class="waves-effect waves-light btn grey darken-3" html="登録" onClick="m_frm.page.value='regist_account_commit'; m_frm.submit();" style="width: 100%;" />
+				</obj>
+				<obj tag="div" class="col s3 center-align">
+					<obj tag="a" class="waves-effect waves-light btn grey darken-3" html="戻る" onClick="b_frm.page.value='index'; b_frm.submit();" style="width: 100%;" />
+				</obj>
+				<obj tag="div" class="col s3" />
+			</obj>
+		</obj>
+	</page>
+</data>

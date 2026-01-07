@@ -1,0 +1,39 @@
+<table class="{{ " ".join(tbl_setting["tbl_class"]) }}">
+	{% if len(data.get("header", [])) > 0 %}
+	<thead>
+		<tr>
+		{% if data.get("index_column", False) %}
+			<th>{{ data.get("index_column_label", "#") }}</th>
+		{% end %}
+		{% for column in data.get("header", []) %}
+			<th>{{ column }}</th>
+		{% end %}
+		</tr>
+	</thead>
+	{% end %}
+	<tbody>
+	{% if len(data.get("list", [])) > 0 %}
+	{% for i, record in enumerate(data.get("list", [])) %}
+		<tr>
+			{% if data.get("index_column", False) %}
+				<td>{{ i }}</td>
+			{% end %}
+			{% for column in record %}
+			<td>{{ column }}</td>
+			{% end %}
+		</tr>
+	{% end %}
+	{% else %}
+		<tr>
+			{% set colspan = len(data.get("header", [])) %}
+			{% if data.get("index_column", False) %}
+			{% set colspan += 1 %}
+			{% end %}
+			{% if colspan == 0 %}
+			{% set colspan = 1 %}
+			{% end %}
+			<td colspan="{{ colspan }}">{{ data.get("nodata_message", "表示するデータがありません。") }}</td>
+		</tr>
+	{% end %}
+	</tbody>
+</table>

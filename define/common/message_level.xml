@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<data>
+	<lv id="alert" value="pink lighten-5" />
+	<lv id="warning" value="orange lighten-5" />
+	<lv id="normal" value="light-blue lighten-5" />
+</data>

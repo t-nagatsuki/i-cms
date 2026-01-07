@@ -1,0 +1,37 @@
+<input type="hidden" name="page" value="" />
+{% for key in [
+    "view_tab",
+    "view_tab_cstm",
+    "view_tab_detail",
+    "view_tab_school",
+    "before_customer_list",
+    "before_school_detail",
+    "before_school_list",
+    "before_school",
+    "before_server",
+    "before_kenja_list"
+] %}
+{% if key in exclude %}{% continue %}{% end %}
+<input type="hidden" name="{{ key }}" id="{{ key }}" value="{{ prm_req.get(key, "0") }}" />
+{% end %}
+{% for key in [
+    "tbl_filter_customer",
+    "tbl_filter_customer_flg",
+    "tbl_filter_customize",
+    "tbl_filter_flg_menu",
+    "tbl_filter_flg_customize",
+    "before_school",
+    "customer_id",
+    "case_id",
+    "detail_id",
+    "customize_id",
+    "school_id",
+    "server_id",
+    "prj_id",
+    "db_id",
+    "before_school_id",
+    "before_server_id"
+] %}
+{% if key in exclude %}{% continue %}{% end %}
+<input type="hidden" name="{{ key }}" id="{{ key }}" value="{{ prm_req.get(key, "") }}" />
+{% end %}

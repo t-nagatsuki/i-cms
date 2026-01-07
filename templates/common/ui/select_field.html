@@ -1,0 +1,18 @@
+<div class="uk-form-horizontal" {% if field_id is not None %}id="{{ field_id }}"{% end %}>
+	<div class="uk-margin">
+		<label class="uk-form-label">{{ data.get("input_title") }}</label>
+		<div class="uk-form-controls">
+			<select
+			id="{{ data.get("input_id") }}" 
+			name="{{ data.get("input_key") }}" 
+			class="uk-select {% if search %}select_search{% end %}"
+			{% if readonly %}disabled{% end %}
+			{% if multiple %}multiple{% end %}
+			>
+			{% for row in data.get("input_value", []) %}
+			<option value="{{ row[col_val] }}" {% if (not multiple and data.get("now_value") == row[col_val]) or (multiple and row[col_val] in data.get("now_value")) %}selected{% end %}>{{ row[col_title]  }}</option>
+			{% end %}
+			</select>
+		</div>
+	</div>
+</div>

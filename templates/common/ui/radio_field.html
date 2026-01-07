@@ -1,0 +1,20 @@
+
+<div class="uk-form-horizontal" {% if field_id is not None %}id="{{ field_id }}"{% end %}>
+	<div class="uk-margin">
+		<label class="uk-form-label">{{ data.get("input_title") }}</label>
+		<div class="uk-grid-small uk-child-width-auto uk-grid uk-form-controls">
+			{% for row in data.get("input_value", []) %}
+			<label>
+				<input
+					class="uk-radio"
+					type="radio"
+					id="{{ data.get("input_id") }}{{ row[col_val] }}" 
+					name="{{ data.get("input_key") }}" 
+					value="{{ row[col_val] }}" 
+					{% if readonly %}onClick="return false;"{% end %}
+					{% if row[col_val] == data.get("now_value") %}checked{% end %} />&nbsp;{{ row[col_title] }}
+			</label>
+			{% end %}
+		</div>
+	</div>
+</div>

@@ -1,0 +1,33 @@
+{% extends "../base.html" %}
+
+{% block title %}{{ prm_cmn["title"] }}{% end %}
+
+{% block content %}
+<form name="m_frm" method="post" action="/">
+{% module xsrf_form_html() %}
+{% for key in prm_req.keys() %}{% if key == "page" %}{% continue %}{% end %}
+<input type="hidden" name="{{ key }}" value="{{ prm_req[key] }}" />
+{% end %}
+<input type="hidden" name="page" value="index" />
+<div class="row">
+	<div class="col s1"></div>
+	<div class="col s10">
+		<div class="card">
+			<div class="card-content">
+				<p>現在メンテナンス中です。</p>
+				<p>ご迷惑をお掛け致しますが終了までしばらくお待ちください。</p>
+				<br />
+				<p>終了予定日時：{{ "　".join(prm_cmn.get("maintenance_enddate", "未定").split("T")) }}</p>
+				<p>事由：{{ prm_cmn.get("maintenance_notice", "定期メンテナンスのため") }}</p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col s5"></div>
+	<button class="col s2 waves-effect waves-light btn grey darken-3" type="button" onClick="m_frm.submit();">TOP</button>
+	<div class="col s5"></div>
+</div>
+</div>
+</form>
+{% end %}

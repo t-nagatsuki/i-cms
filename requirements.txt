@@ -1,0 +1,10 @@
+﻿tornado
+tinydb
+requests
+beautifulsoup4
+lxml
+pymysql
+openpyxl
+paramiko
+python-dateutil
+sshtunnel

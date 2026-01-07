@@ -1,0 +1,22 @@
+
+<div class="uk-form-horizontal" {% if field_id is not None %}id="{{ field_id }}"{% end %}>
+	<div class="uk-margin">
+		<label class="uk-form-label">{{ data.get("input_title") }}</label>
+		<div class="uk-grid-small uk-child-width-auto uk-grid uk-form-controls" uk-grid>
+			{% for row in data.get("input_value", []) %}
+			<div class="uk-width-1-{{ column_num }}">
+				<label>
+					<input 
+						id="{{ data.get("input_id") }}{{ row[col_val] }}" 
+						name="{{ data.get("input_key") }}{{ row[col_val] }}" 
+						class="uk-checkbox" 
+						type="checkbox" 
+						value="{{ row[col_val] }}" 
+						{% if readonly %}disabled{% end %}
+						{% if row[col_val] in data.get("now_value") %}checked{% end %}>&nbsp;{{ row[col_title] }}
+				</label>
+			</div>
+			{% end %}
+		</div>
+	</div>
+</div>

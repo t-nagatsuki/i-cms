@@ -1,0 +1,14 @@
+<div class="uk-form-horizontal" {% if field_id is not None %}id="{{ field_id }}"{% end %}>
+	<div class="uk-margin">
+		<label class="uk-form-label">{{ data.get("input_title") }}</label>
+		<div class="uk-form-controls">
+			<textarea 
+				id="{{ data.get("input_id") }}" 
+				name="{{ data.get("input_key") }}" 
+				class="uk-textarea" 
+				{% if readonly %}readonly{% end %}
+				{% if data.get("max_length") is not None %}data-length="{{ data.get("max_length") }}"{% end %}
+			>{{ data.get("input_value") }}</textarea>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<data>
+	<table id="tbl_setting" db="db_control">
+		<column key="key" type="text" role="ref,key" />
+		<column key="value" type="text" role="ref,up" />
+	</table>
+	<table id="tbl_account" name="account" db="db_control">
+		<join id="tbl_auth" name="auth" join_key="id" on_key="id" />
+		<column key="id" type="text" role="ref,key" />
+		<column key="password" type="text" role="ref,up" />
+		<column key="name" type="text" role="ref,up" />
+		<column key="admin" type="bool" role="ref,up" default="true" />
+		<column key="auth_function" type="text" role="join" join="auth" get_key="function" />
+	</table>
+	<table id="tbl_notice" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="notice_text" type="text" role="ref,up" />
+	</table>
+	<table id="tbl_update" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="update_date" type="text" role="ref,up" />
+		<column key="update_text" type="text" role="ref,up" />
+	</table>
+	<table id="tbl_auth" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="function" type="text" role="ref,up" />
+		<column key="value" type="bool" role="ref,up" />
+	</table>
+</data>

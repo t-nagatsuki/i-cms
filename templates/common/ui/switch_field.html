@@ -1,0 +1,27 @@
+{% set input_id = data.get("input_id") %}
+{% set input_key = data.get("input_key") %}
+{% set input_value = data.get("input_value") %}
+{% set input_value_on = data.get("input_value_on") %}
+{% set input_value_off = data.get("input_value_off") %}
+{% set input_label_on = data.get("input_label_on") %}
+{% set input_label_off = data.get("input_label_off") %}
+{% if not isinstance(input_id, list) %}
+	{% set input_id = [input_id] %}
+	{% set input_key = [input_key] %}
+	{% set input_value = [input_value] %}
+	{% set input_value_on = [input_value_on] %}
+	{% set input_value_off = [input_value_off] %}
+	{% set input_label_on = [input_label_on] %}
+	{% set input_label_off = [input_label_off] %}
+{% end %}
+<div class="uk-form-horizontal" {% if field_id is not None %}id="{{ field_id }}"{% end %}>
+	<div class="uk-margin">
+		<label class="uk-form-label">{{ data.get("input_title") }}</label>
+		{% for i, val in enumerate(input_id) %}
+		<div class="uk-grid-small uk-child-width-auto uk-grid uk-form-controls">
+			<label><input class="uk-radio" type="radio" id="{{ input_id[i] }}_off" name="{{ input_key[i] }}" value="{{ input_value_off[i] }}" {% if readonly %}onClick="return false;"{% end %} {% if str(input_value[i]) != input_value_on[i] %}checked{% end %} />&nbsp;{{ input_label_off[i] }}</label>
+			<label><input class="uk-radio" type="radio" id="{{ input_id[i] }}_on" name="{{ input_key[i] }}" value="{{ input_value_on[i] }}" {% if readonly %}onClick="return false;"{% end %} {% if str(input_value[i]) == input_value_on[i] %}checked{% end %} />&nbsp;{{ input_label_on[i] }}</label>
+		</div>
+		{% end %}
+	</div>
+</div>

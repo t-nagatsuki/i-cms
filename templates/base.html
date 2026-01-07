@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta name="author" content="{{ prm_cmn.get("author", "未定義") }}" />
+		<meta name="description" content="{{ prm_cmn.get("description", "未定義") }}" />
+		<meta name="keywords" content="{{ prm_cmn.get("keywords", "未定義") }}" />
+		<title>{% block title %}{{ prm_cmn.get("title", "未定義") }}{% end %}</title>
+		<link type="text/css" href="static/css/uikit.min.css" rel="stylesheet" />
+		<link type="text/css" href="static/css/select2.min.css" rel="stylesheet" />
+		<link type="text/css" href="static/css/append.css" rel="stylesheet" />
+		<script type="text/javascript" src="static/js/jquery-3.6.4.min.js"></script>
+		<script type="text/javascript" src="static/js/autosize.min.js"></script>
+		<script type="text/javascript" src="static/js/uikit.min.js"></script>
+		<script type="text/javascript" src="static/js/uikit-icons.min.js"></script>
+		<script type="text/javascript" src="static/js/select2.min.js"></script>
+		<script type="text/javascript" src="static/js/i18n/ja.js"></script>
+		<script type="text/javascript" src="static/js/append.js"></script>
+	</head>
+	<body>
+		<div id="page-wrapper">
+			<div class="uk-navbar-container" uk-sticky>
+				<div class="uk-container uk-container-expand">
+					<div class="uk-navbar">
+						<div class="uk-navbar-left">
+							<a href="" class="uk-navbar-item uk-logo">{{ prm_cmn.get("title", "未定義") }}</a><br />
+						</div>
+						<div class="uk-navbar-right">
+							{% block sidebar %}
+							{% end %}
+						</div>
+					</div>
+					{% if len(prm_cmn.get("lst_breadcrumb", [])) > 0 %}
+					<div class="uk-navbar">
+						<div class="uk-navbar-left">
+							<ul class="uk-breadcrumb">
+								{% if len(prm_cmn.get("lst_side_menu", [])) > 0 %}
+								<li><a uk-toggle="target: #side_menu" uk-icon="icon: chevron-double-right"></a></li>
+								{% end %}
+								{% for blk in prm_cmn.get("lst_breadcrumb", []) %}
+								<li><a {% if not blk.get("link") is None and blk.get("link") != prm_req.get("page") %}onClick="{% for p in blk["param"].keys() %}m_frm.{{ p }}.value='{{ blk["param"][p] }}';{% end %}m_frm.page.value='{{ blk.get("link") }}'; m_frm.submit();"{% end %}
+								{% if not blk.get("icon") is None %} uk-icon="icon: {{ blk.get("icon") }};"{% end %}>{{ blk.get("title") }}</a></li>
+								{% end %}
+							</ul>
+						</div>
+						<div class="uk-navbar-right">
+							{% block breadcrumb %}
+							{% end %}
+						</div>
+					</div>
+					{% end %}
+					{% block header %}
+					{% end %}
+				</div>
+			</div>
+			<div class="uk-section uk-section-small uk-section-default">
+				<div class="uk-container uk-container-expand">
+					{% for key in prm_cmn["color_role"].keys() %}
+					{% set div_style="" %}
+					{% if len(prm_cmn["message"][key]) == 0 %}
+						{% set div_style="display: None;" %}
+					{% end %}
+					<div class="uk-card uk-card-body uk-margin-small uk-padding-small {{ prm_cmn["color_role"][key] }}" id="div_message_{{ key }}" style="{{ div_style }}">
+						<p id="div_message_{{ key }}_text">
+							{% if len(prm_cmn["message"][key]) > 0 %}
+								{{ prm_cmn["message"][key][0] }}
+								{% for i in range(1, len(prm_cmn["message"][key])) %}
+                                    <br />{{ prm_cmn["message"][key][i] }}
+                                    {% if i >= 19 %}
+                                        {% if len(prm_cmn["message"][key])-i > 1 %}
+                                        <br />(他{{len(prm_cmn["message"][key])-i-1}}件)
+                                        {% end %}
+                                        {% break %}
+									{% end %}
+								{% end %}
+							{% end %}
+						</p>
+					</div>
+					{% end %}
+					{% block content %}{% end %}
+				</div>
+			</div>
+		</div>
+		{% block footer %}
+		<footer id="page-footer" class="uk-margin-top uk-navbar-container uk-padding-small" uk-sticky>
+			<div class="uk-container uk-container-expand">
+				<div class="uk-navbar">
+					<div class="uk-navbar-right">
+						<p class="uk-text-small">i-CMS Rev.6</p>
+					</div>
+				</div>
+			</div>
+		</footer>
+		{% end %}
+		<div id="loading" style="display: none; position: fixed; width: 100%; height: 100%; top: 0px; left: 0px; opacity: 0.2; background: #000; z-index: 999;" uk-height-viewport="expand: true">
+			<div class="uk-align-center" style="opacity: 1; z-index: 1000;">
+				<span uk-spinner="ratio: 4.5"></span>
+			</div>
+		</div>
+		<div id="side_menu" uk-offcanvas="overlay: true">
+			<div class="uk-offcanvas-bar">
+				<ul class="uk-nav uk-nav-default">
+					<li><a onclick="m_frm.page.value='index'; m_frm.submit();"><span class="uk-margin-small-right" uk-icon="icon: home"></span> Home</a></li>
+					<li class="uk-parent">
+						<ul class="uk-nav-sub">
+							{% for menu in prm_cmn.get("lst_side_menu", []) %}
+							{% set params = [] %}
+							{% for key in menu.get("params", []) %}
+							{% set params.append(f"m_frm.{key}.value='{menu['params'][key]}';") %}
+							{% end %}
+							<li><a onclick="m_frm.page.value='{{ menu.get("page", "") }}';{{ " ".join(params) }} m_frm.submit();"><span class="uk-margin-small-right" uk-icon="icon: home"></span> {{ menu.get("title", "No Title") }}</a></li>
+							{% end %}
+						</ul>
+					</li>
+					<li><a onclick="m_frm.page.value='logout'; m_frm.submit();"><span class="uk-margin-small-right" uk-icon="icon: sign-out"></span> Logout</a></li>
+				</ul>
+			</div>
+		</div>
+		<script type="text/javascript">
+			var lst_message_type = [];
+
+			$(document).ready(function() {
+				autosize($("textarea"));
+				$('.select_search').select2();
+				
+				{% for key in prm_cmn["color_role"].keys() %}
+				lst_message_type.push("{{ key }}");
+				{% end %}
+
+				{% block js_ready %}{% end %}
+			});
+			{% block js_function %}{% end %}
+		</script>
+	</body>
+</html>

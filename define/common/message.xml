@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<data>
+	<!-- 標準メッセージ -->
+	<message id="C-0001" lv="normal" text="{0[0]}を登録致しました。" />
+	<message id="C-0002" lv="normal" text="{0[0]}を更新致しました。" />
+	<message id="C-0003" lv="normal" text="{0[0]}を削除致しました。" />
+	<message id="C-0004" lv="normal" text="{0[0]}を実行しました。" />
+	<message id="CE-0001" lv="alert" text="認証に失敗しました。" />
+	<message id="CE-0002" lv="alert" text="この機能にアクセスする権限がありません。" />
+	<message id="CE-0003" lv="alert" text="表示対象のページはログインしなければ表示できません。 : {[0]}" />
+	<message id="CE-0004" lv="alert" text="表示対象のページは管理者としてログインしなければ表示できません。 : {[0]}" />
+	<message id="CE-0005" lv="alert" text="対象ページを表示する権限を持っていません。 : {[0]}" />
+	<message id="CE-0006" lv="alert" text="表示対象のページが存在しません。 : {[0]}" />
+	<message id="CE-0007" lv="alert" text="必要な情報が入力されていません。 : {[0]}" />
+	<message id="CE-0008" lv="alert" text="指定されたフォルダは存在しません。 : {[0]}" />
+	<message id="CE-0009" lv="alert" text="データ格納先フォルダに{0}が存在しません。" />
+	<message id="CE-0010" lv="alert" text="データ格納先フォルダに{0}が複数存在します。" />
+	<message id="CE-9999" lv="alert" text="処理中に予期しないエラーが発生しました。 : {[0]}" />
+
+	<!-- 管理機能メッセージ -->
+	<message id="AC-0001" lv="alert" text="追加が完了しました。" />
+	<message id="AC-0002" lv="alert" text="更新が完了しました。" />
+	<message id="AC-0003" lv="alert" text="削除が完了しました。" />
+	<message id="ACE-0001" lv="alert" text="ユーザIDが未入力です。" />
+	<message id="ACE-0002" lv="alert" text="User IDに使用不可能な文字が含まれています。
+User IDには英数字、及び一部の記号(-、_)のみ使用する事が出来ます。" />
+	<message id="ACE-0003" lv="alert" text="パスワードが未入力です。" />
+	<message id="ACE-0004" lv="alert" text="表示名が未入力です。" />
+	<message id="ACE-0005" lv="alert" text="LDAPユーザが未選択です。" />
+</data>

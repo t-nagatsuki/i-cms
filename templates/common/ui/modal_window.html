@@ -1,0 +1,34 @@
+<div id="{{ data["window_id"] }}" class="uk-flex-top" uk-modal>
+	<div class="uk-modal-dialog uk-modal-body">
+		{% if data["window_title"] is not None %}
+		<div class="uk-modal-header">
+			<h4 class="uk-modal-title">{{ data["window_title"] }}</h4>
+		</div>
+		{% end %}
+		<div class="uk-modal-body">
+			{% for message in data["window_messages"] %}
+			<p>{{ message }}</p>
+			{% end %}
+			{% if data["window_note"] is not None %}
+			<div class="uk-form-horizontal">
+				<div class="uk-margin">
+					<label class="uk-form-label">{{ data["window_note"].get("input_title") }}</label>
+					<div class="uk-form-controls">
+						<textarea 
+							id="{{ data["window_note"].get("input_id") }}" 
+							name="{{ data["window_note"].get("input_key") }}" 
+							class="uk-textarea" 
+							{% if data["window_note"].get("max_length") is not None %}data-length="{{ data["window_note"].get("max_length") }}"{% end %}
+						></textarea>
+					</div>
+				</div>
+			</div>
+			{% end %}
+		</div>
+		<div class="uk-modal-footer uk-text-right">
+			{% for btn in data["window_buttons"] %}
+			<button type="button" class="uk-button uk-button-default uk-modal-close" onClick="{{ btn["click"] }}">{{ btn["title"] }}</button>
+			{% end %}
+		</div>
+	</div>
+</div>

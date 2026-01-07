@@ -1,0 +1,168 @@
+{% extends "../base.html" %}
+
+{% block title %}{{ prm_cmn["title"] }}{% end %}
+
+{% autoescape None %}
+
+{% block header %}
+<a href="#" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+<div id="nav-mobile" class="right hide-on-med-and-down">
+	<ul class="tabs tabs-transparent">
+		<li class="tab">
+			<a href="#tab1"{% if prm_req.get("view_tab", "tab1") == "tab1" %} class="active"{% end %} onClick="change_tab('tab1');">一覧</a>
+		</li>
+		<li class="tab">
+			<a href="#tab2"{% if prm_req.get("view_tab", "tab1") == "tab2" %} class="active"{% end %} onClick="change_tab('tab2');">{% if prm_cmn.get("account_id") is None %}ログイン{% else %}マイページ{% end %}</a>
+		</li>
+		<li class="tab">
+			<a href="#tab2"{% if prm_req.get("view_tab", "tab1") == "tab3" %} class="active"{% end %} onClick="change_tab('tab3');">告知事項</a>
+		</li>
+		<li class="tab">
+			<a href="#tab2"{% if prm_req.get("view_tab", "tab1") == "tab4" %} class="active"{% end %} onClick="change_tab('tab4');">更新履歴</a>
+		</li>
+	</ul>
+</div>
+{% end %}
+
+{% block content %}
+<ul id="mobile-menu" class="sidenav">
+	<li><a {% if prm_req.get("view_tab", "tab1") == "tab1" %}if class="waves-effect" {% end %}href="#tab1" onClick="change_tab('tab1');">キャラクター</a></li>
+	<li><a {% if prm_req.get("view_tab", "tab1") == "tab2" %}if class="waves-effect" {% end %}href="#tab2" onClick="change_tab('tab2');">{% if prm_cmn.get("account_id") is None %}ログイン{% else %}マイページ{% end %}</a></li>
+	<li><a {% if prm_req.get("view_tab", "tab1") == "tab3" %}if class="waves-effect" {% end %}href="#tab3" onClick="change_tab('tab3');">告知事項</a></li>
+	<li><a {% if prm_req.get("view_tab", "tab1") == "tab4" %}if class="waves-effect" {% end %}href="#tab4" onClick="change_tab('tab4');">更新履歴</a></li>
+</ul>
+<div class="row">
+	<div class="col s12" id="tab1">
+		<table class="bordered striped responsive-table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>名前</th>
+					<th>性別</th>
+					<th>年齢</th>
+					<th>最終更新日時</th>
+					<th>作成者</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% if len(prm_cmn.get('lst_character', [])) == 0 %}
+					<tr>
+						<td colspan="7">登録されていません。</td>
+					</tr>
+				{% else %}
+					{% for i, record in enumerate(prm_cmn.get('lst_character', [])) %}
+					<tr>
+						<td>{{ i + 1 }}</td>
+						<td><a href="#" onClick="view_character('{{ record["id"] }}', '{{ record["cid"] }}');">{{ record["name"] }}</a></td>
+						<td>{{ prm_cmn["dict_sex"].get(record["sex"], "") }}</td>
+						<td>{{ record["age"] }}</td>
+						<td>{{ record["update_date"] }}</td>
+						<td>{{ prm_cmn["dict_account"][record["id"]] }}</td>
+					</tr>
+					{% end %}
+				{% end %}
+			</tbody>
+		</table>
+	</div>
+	<div class="col s12" id="tab2">
+		<form action="." name="m_frm" method="post">
+			<input type="hidden" name="page" />
+			<input type="hidden" name="view_tab" id="target_tab" value="{{ prm_req.get("view_tab", "tab1") }}" />
+			<input type="hidden" name="target_user_id" />
+			<input type="hidden" name="target_character_id" />
+			<input type="hidden" name="target_doll_id" />
+			<div class="row mb-10">
+				<div class="col s12"></div>
+			</div>
+			{% if prm_cmn.get("account_id") is None %}
+			<div class="row">
+				<div class="col s2"></div>
+				<div class="input-field col s4">
+					<input type="text" id="user_id" name="user_id" class="validate" value="{{ prm_req.get('user_id', '') }}" />
+					<label for="user_id">User ID</label>
+				</div>
+				<div class="input-field col s4">
+					<input type="password" id="input_password" name="input_password" class="validate" value="{{ prm_req.get('input_password', '') }}" />
+					<label for="input_password">Password</label>
+				</div>
+				<div class="col s2"></div>
+			</div>
+			<div class="row">
+				<div class="col s2"></div>
+				<div class="col s4 center-align">
+					<a class="waves-effect waves-light btn grey darken-3" onClick="m_frm.page.value='login'; m_frm.submit();" style="width: 100%;">ログイン</a>
+				</div>
+				<div class="col s4 center-align">
+					<a class="waves-effect waves-light btn grey darken-3" onClick="m_frm.page.value='regist_account'; m_frm.submit();" style="width: 100%;">登録</a>
+				</div>
+				<div class="col s2"></div>
+			</div>
+			{% else %}
+			{% if len(prm_cmn["define_menu"]) > 0 %}
+			<div class="row mb-5">
+				<div class="col s1"></div>
+				<div class="col s10">
+					<h5>ツールメニュー</h5>
+				</div>
+				<div class="col s1"></div>
+			</div>
+
+			{% set flg = False %}
+			{% for i, val in enumerate(prm_cmn["define_menu"]) %}
+				{% set flg = True %}
+				{% if i % 4 == 0 %}
+			<div class="row">
+				<div class="col s2"></div>
+				{% end %}
+			<div class="col s2"><a class="waves-effect waves-light btn {{ val.text_color }} {{ val.back_color }} {% if val.menu_disable %}disabled{% end %}" id="{{ val.menu_id }}" onClick="m_frm.page.value='{{ val.menu_action }}'; m_frm.submit();" style="height: 100px; width: 100%;"><div class="valign-wrapper" style="height: 100%;"><i class="material-icons">{{ val.menu_icon }}</i>　{{ val.menu_title }}</div></a></div>
+				{% if i % 4 == 3 %}
+				{% set flg = False %}
+				<div class="col s2"></div>
+			</div>
+				{% end %}
+			{% end %}
+			{% if flg %}
+				<div class="col s2"></div>
+			</div>
+			{% end %}
+			{% end %}
+			<div class="row">
+				<div class="col s12 m4"></div>
+				<div class="col s12 m8 center-align">
+					<a class="waves-effect waves-light btn grey darken-3" onClick="m_frm.page.value='logout'; m_frm.submit();" style="width: 100%;">ログアウト</a>
+				</div>
+				<div class="col s12 m4"></div>
+			</div>
+			{% end %}
+		</form>
+	</div>
+	<div class="col s12" id="tab3">
+	{% if len(prm_cmn.get('lst_notice', [])) == 0 %}
+		<blockquote>告知事項はありません。</blockquote>
+	{% else %}
+		{% for record in prm_cmn.get('lst_notice', []) %}
+			<blockquote>{{ record['notice_text'] }}</blockquote>
+		{% end %}
+	{% end %}
+	</div>
+	<div class="col s12" id="tab4">
+	{% if len(prm_cmn.get('lst_update', [])) == 0 %}
+		<blockquote>更新履歴はありません。</blockquote>
+	{% else %}
+		{% for record in prm_cmn.get('lst_update', []) %}
+			<blockquote>{{ record['update_date'] }}<br />{{ record['update_text'] }}</blockquote>
+		{% end %}
+	{% end %}
+	</div>
+</div>
+{% end %}
+
+{% block js_ready %}
+{% end %}
+
+{% block js_function %}
+function change_tab(target_tab) {
+	$('ul.tabs').tabs('select', target_tab);
+	$('#target_tab').val(target_tab);
+}
+{% end %}

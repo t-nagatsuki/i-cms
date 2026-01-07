@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<data>
+	<table id="tbl_setting" db="db_control">
+		<column key="setting_key" type="text" role="ref,key" />
+		<column key="setting_value" type="text" role="ref,up" />
+	</table>
+	<table id="tbl_notice" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="notice_text" type="text" role="ref,up" />
+	</table>
+	<table id="tbl_update" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="update_date" type="text" role="ref,up" />
+		<column key="update_text" type="text" role="ref,up" />
+		<sort key="update_date" order="desc" />
+	</table>
+	<table id="tbl_access_hist" db="db_control">
+		<column key="access_date" type="text" role="ref,key" />
+		<column key="account_id" type="text" role="ref,key" />
+		<column key="account_name" type="text" role="join" join="tbl_account" get_key="name" />
+		<join id="tbl_account" name="tbl_account" join_key="account_id" on_key="id" />
+	</table>
+	<table id="tbl_operation_hist" db="db_control">
+		<column key="operation_date" type="text" role="ref,key" />
+		<column key="operation_id" type="text" role="ref,key" />
+		<column key="account_id" type="text" role="ref,up" />
+		<column key="account_name" type="text" role="join" join="tbl_account" get_key="name" />
+		<column key="operation" type="text" role="ref,up" />
+		<column key="return_operation" type="text" role="ref,up" />
+		<column key="args" type="text" role="ref,up" />
+		<join id="tbl_account" name="tbl_account" join_key="account_id" on_key="id" />
+	</table>
+	<table id="tbl_group" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="name" type="text" role="ref,up" />
+		<column key="admin" type="bool" role="ref,up" />
+		<column key="manage_system" type="bool" role="ref,up" />
+		<column key="manage_sales" type="bool" role="ref,up" />
+	</table>
+	<table id="tbl_account" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="password" type="text" role="ref,up" />
+		<column key="name" type="text" role="ref,up" />
+		<column key="admin" type="bool" role="ref,up" />
+	</table>
+	<table id="tbl_account_settings" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="setting_key" type="text" role="ref,key" />
+		<column key="setting_value" type="text" role="ref,up" />
+	</table>
+	<table id="tbl_group_affiliation" db="db_control">
+		<column key="group_id" type="text" role="ref,key" />
+		<column key="group_name" type="text" role="join" join="tbl_group" get_key="name" />
+		<column key="manage_system" type="bool" role="join" join="tbl_group" get_key="manage_system" />
+		<column key="manage_sales" type="bool" role="join" join="tbl_group" get_key="manage_sales" />
+		<column key="account_id" type="text" role="ref,key" />
+		<column key="account_name" type="text" role="join" join="tbl_account" get_key="name" />
+		<join id="tbl_group" name="tbl_group" join_key="group_id" on_key="id" />
+		<join id="tbl_account" name="tbl_account" join_key="account_id" on_key="id" />
+	</table>
+	<table id="tbl_auth" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="function" type="text" role="ref,key,up" />
+		<column key="auth_value" type="bool" role="ref,up" />
+	</table>
+	<table id="tbl_group_auth" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="function" type="text" role="ref,key,up" />
+		<column key="auth_value" type="bool" role="ref,up" />
+	</table>
+
+	<table id="mst_auth" db="db_control">
+		<column key="auth_id" type="text" role="ref,key" />
+		<column key="auth_name" type="text" role="ref,up" />
+		<column key="function" type="text" role="ref,up" />
+		<column key="operation" type="byte" role="ref,up" />
+	</table>
+
+	<table id="mst_menu_group" db="db_control">
+		<column key="menu_group_id" type="text" role="ref,key" />
+		<column key="menu_group_name" type="text" role="ref,up" />
+		<column key="flg_disable" type="bool" role="ref,up" />
+		<column key="flg_admin" type="bool" role="ref,up" />
+		<column key="icon" type="text" role="ref,up" />
+		<column key="text_color" type="text" role="ref,up" />
+		<column key="back_color" type="text" role="ref,up" />
+		<column key="sort_order" type="int" role="ref,up" />
+	</table>
+
+	<table id="mst_menu" db="db_control">
+		<column key="menu_id" type="text" role="ref,key" />
+		<column key="menu_name" type="text" role="ref,up" />
+		<column key="action_name" type="text" role="ref,up" />
+		<column key="flg_disable" type="bool" role="ref,up" />
+		<column key="flg_admin" type="bool" role="ref,up" />
+		<column key="icon" type="text" role="ref,up" />
+		<column key="text_color" type="text" role="ref,up" />
+		<column key="back_color" type="text" role="ref,up" />
+		<column key="sort_order" type="int" role="ref,up" />
+	</table>
+
+	<table id="mst_menu_relation" db="db_control">
+		<column key="menu_group_id" type="text" role="ref,key" />
+		<column key="menu_id" type="text" role="ref,up" />
+		<column key="menu_group_name" type="text" role="join" join="mst_menu_group" get_key="menu_group_name" />
+		<column key="menu_name" type="text" role="join" join="mst_menu" get_key="menu_name" />
+		<join id="mst_menu_group" name="mst_menu_group" join_key="menu_group_id" on_key="menu_group_id" />
+		<join id="mst_menu" name="mst_menu" join_key="menu_id" on_key="menu_id" />
+	</table>
+
+	<table id="mst_menu_auth" db="db_control">
+		<column key="menu_id" type="text" role="ref,key" />
+		<column key="auth_id" type="text" role="ref,up" />
+	</table>
+</data>

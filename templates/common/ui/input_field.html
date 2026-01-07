@@ -1,0 +1,57 @@
+{% set input_id = data.get("input_id") %}
+{% set input_key = data.get("input_key") %}
+{% set input_value = data.get("input_value") %}
+{% set place_holder = data.get("place_holder") %}
+{% set max_length = data.get("max_length") %}
+{% if not isinstance(input_id, list) %}
+	{% set input_id = [input_id] %}
+	{% set input_key = [input_key] %}
+	{% set input_value = [input_value] %}
+	{% set place_holder = [place_holder] %}
+	{% set max_length = [max_length] %}
+{% end %}
+<div class="uk-form-horizontal" {% if field_id is not None %}id="{{ field_id }}"{% end %}>
+	<div class="uk-margin">
+		<label class="uk-form-label">{{ data.get("input_title") }}</label>
+		{% for i, val in enumerate(input_id) %}
+			{% if field_type != "password" %}
+			<div class="uk-form-controls">
+				<div class="uk-inline uk-width-1-1">
+					{% if button_icon is not None %}
+					<a class="uk-form-icon uk-form-icon-flip" uk-icon="icon: {{ button_icon }}" onClick="{{ button_event }}" uk-tooltip="{{ button_tips }}"></a>
+					{% end %}
+					<input 
+						type="{{ field_type }}" 
+						class="uk-input"
+						{% if field_step is not None %}step="{{ field_step }}"{% end %}
+						id="{{ input_id[i] }}" 
+						name="{{ input_key[i] }}" 
+						value="{{ input_value[i] }}"
+						{% if data.get("place_holder") is not None %}placeholder="{{ place_holder[i] }}"{% end %}
+						{% if readonly %}readonly{% end %}
+						{% if data.get("max_length") is not None %}data-length="{{ max_length[i] }}"{% end %}
+					/>
+				</div>
+			</div>
+			{% else %}
+			<div class="uk-form-controls">
+				<div class="uk-inline uk-width-1-1">
+					{% if change_view_passward %}
+					<a class="uk-form-icon uk-form-icon-flip" uk-icon="icon: eye" onClick="change_form_type('{{ input_id[i] }}');"></a>
+					{% end %}
+					<input 
+						type="password" 
+						class="uk-input"
+						id="{{ input_id[i] }}" 
+						name="{{ input_key[i] }}" 
+						value="{{ input_value[i] }}"
+						{% if data.get("place_holder") is not None %}placeholder="{{ place_holder[i] }}"{% end %}
+						{% if readonly %}readonly{% end %}
+						{% if data.get("max_length") is not None %}data-length="{{ max_length[i] }}"{% end %}
+					/>
+				</div>
+			</div>
+			{% end %}
+		{% end %}
+	</div>
+</div>
