@@ -13,12 +13,6 @@ class InitializeData():
 	本クラスの関数は静的関数となるため、クラスオブジェクトの生成を行わずに使用すること。
 	"""
 
-	def __init__(self):
-		"""
-		コンストラクタ
-		"""
-		pass
-
 	@staticmethod
 	def exec(handler):
 		"""
