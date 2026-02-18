@@ -19,33 +19,38 @@ from functions.handler.main_handler import MainHandler
 from functions.handler.socket_handler import SocketHandler
 from functions.handler.xsrf_token_handler import XsrfTokenHandler
 
-# 終了確認フラグ
-is_closing = False
+# SSHトンネル
+tunnels = []
 
 def print_message(message):
     print(message)
     app_log.info(message)
 
-def signal_handler(signalnum, frame):
+def signal_handler(signal, frame):
     """
     Ctrl+Cによる停止処理
 
     Parameters
     ----------
-    signalnum : int
+    signal : int
         シグナル番号
     frame : int
         現在のスタックフレーム
     """
-    global is_closing
     print_message("Stopping Server")
-    is_closing = True
+    ioloop.IOLoop.instance().add_callback_from_signal(shutdown)
 
-def try_exit():
-    global is_closing
-    if is_closing:
-        ioloop.IOLoop.current().stop()
-        print_message("Server Stopped")
+def shutdown():
+    """
+    サーバ停止処理
+    """
+    ioloop.IOLoop.current().stop()
+    print_message("Server Stopped")
+    if len(tunnels) == 0:
+        return
+    for tunnel in tunnels:
+        tunnel.stop()
+    print_message(f"Stopped SSH Tunnel")
 
 def initialize_pages(path):
     """
@@ -165,12 +170,13 @@ if __name__ == "__main__":
             }
         )
     # Ctrl+Cによる停止処理
+    signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
 
     # SSHトンネルの設定
     if options.ssh_tunnel:
         if len(options.remote_bind_port) != len(options.local_bind_port):
-            print_message("Error: remote_bind_port and local_bind_port must be same length")
+            print_message("Error : remote_bind_port and local_bind_port must be same length")
             sys.exit(1)
         print_message(f"Starting SSH Tunnel(host:{options.ssh_host} port:{options.ssh_port})")
         for idx in len(options.remote_bind_port):
@@ -181,7 +187,8 @@ if __name__ == "__main__":
                 remote_bind_address=(options.bind_address, options.remote_bind_port[idx]),
                 local_bind_address=("0.0.0.0", options.local_bind_port[idx])
             )
-        tunnel.start()
+            tunnel.start()
+            tunnels.append(tunnel)
 
     # マルチスレッド使用有無
     if not options.multi_thread:
@@ -194,8 +201,5 @@ if __name__ == "__main__":
         server.start(num_processes=options.thread)
     print_message("Starting Server(port:{0})".format(port))
 
-    ioloop.PeriodicCallback(try_exit, 100).start()
+    ioloop.PeriodicCallback(shutdown, 100).start()
     ioloop.IOLoop.current().start()
-
-    if options.ssh_tunnel:
-        tunnel.stop()
