@@ -15,7 +15,8 @@ from functions.common import module_ui
 from functions.common.load_options import LoadOptions
 from functions.common.control_define import ControlDefine
 from functions.handler.redirect_handler import RedirectToHttpsHandler
-from functions.handler.main_handler import MainHandler
+from functions.handler.page_handler import PageHandler
+from functions.handler.api_handler import ApiHandler
 from functions.handler.socket_handler import SocketHandler
 from functions.handler.xsrf_token_handler import XsrfTokenHandler
 
@@ -38,7 +39,7 @@ def signal_handler(signal, frame):
         現在のスタックフレーム
     """
     print_message("Stopping Server")
-    ioloop.IOLoop.instance().add_callback_from_signal(shutdown)
+    ioloop.IOLoop.current().add_callback_from_signal(shutdown)
 
 def shutdown():
     """
@@ -73,6 +74,30 @@ def initialize_pages(path):
         if not page.handler_url in result.keys():
             result[page.handler_url] = []
         result[page.handler_url].append(page)
+    return result
+
+
+def initialize_api(path):
+    """
+    ユーザ定義APIクラスの読込処理
+
+    Parameters
+    ----------
+    path : string
+        読込を行うユーザ定義Pageクラスの格納パス
+    """
+    page_dir = glob(path, recursive=True)
+    result = {}
+    for file_path in page_dir:
+        if os.path.basename(file_path) in ["__init__.py", "base_api.py"]:
+            continue
+        print_message("Loading : {0}".format(file_path.replace("\\", "/")))
+        class_path = os.path.splitext(file_path)[0].replace(os.path.sep, '.').replace("/", ".")
+        print_message("Class Path : {0}".format(class_path))
+        api = import_module(class_path).Api()
+        if not api.handler_url in result.keys():
+            result[api.handler_url] = []
+        result[api.handler_url].append(api)
     return result
 
 def initialize_sockets(path):
@@ -116,9 +141,10 @@ if __name__ == "__main__":
         static_path = os.path.join(base_path, static_path)
 
     # 各種表示クラス初期化
-    pages = initialize_pages("functions/page/main/**/*.py")
+    pages = initialize_pages("functions/page/**/*.py")
+    api = initialize_api("functions/api/**/*.py")
     sockets = initialize_sockets("functions/socket/**/*.py")
-    if len(pages.keys() & sockets.keys() & {"xsrf-token"}) > 0:
+    if len(pages.keys() & api.keys() & sockets.keys() & {"xsrf-token"}) > 0:
         print_message("Error : Duplicate URL")
         sys.exit(1)
     ctrl_define = ControlDefine()
@@ -126,11 +152,14 @@ if __name__ == "__main__":
     # URL設定
     urls = [(r"/xsrf-token", XsrfTokenHandler, {})]
     for url in pages.keys():
-        print_message("Starting PageHandler : /{0}".format(url))
-        urls.append((r"/{0}".format(url), MainHandler, { "pages": pages[url], "ctrl_define": ctrl_define }))
+        print_message("Starting PageHandler : {0}".format(url))
+        urls.append((r"{0}".format(url), PageHandler, { "pages": pages[url], "ctrl_define": ctrl_define }))
+    for url in api.keys():
+        print_message("Starting ApiHandler : {0}".format(url))
+        urls.append((r"{0}".format(url), ApiHandler, { "api": api[url], "ctrl_define": ctrl_define }))
     for url in sockets.keys():
-        print_message("Starting SocketHandler : /{0}".format(url))
-        urls.append((r"/{0}".format(url), SocketHandler, { "sockets": sockets[url], "ctrl_define": ctrl_define }))
+        print_message("Starting SocketHandler : {0}".format(url))
+        urls.append((r"{0}".format(url), SocketHandler, { "sockets": sockets[url], "ctrl_define": ctrl_define }))
 
     # アプリケーション設定
     app = web.Application(
@@ -147,7 +176,7 @@ if __name__ == "__main__":
         log_file_num_backups=options.log_file_num_backups,
         logging=options.logging,
         ui_modules=module_ui,
-        autoreload=not options.multi_thread
+        autoreload=options.debug_mode and not options.multi_thread
     )
 
     # サーバー設定
@@ -201,5 +230,8 @@ if __name__ == "__main__":
         server.start(num_processes=options.thread)
     print_message("Starting Server(port:{0})".format(port))
 
-    ioloop.PeriodicCallback(shutdown, 100).start()
-    ioloop.IOLoop.current().start()
+    try:
+        ioloop.IOLoop.current().start()
+    except KeyboardInterrupt:
+        print_message("Stopping Server")
+        shutdown()

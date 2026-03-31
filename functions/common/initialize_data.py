@@ -75,11 +75,13 @@ class InitializeData():
 			# 権限設定
 			user = handler.ctrl_define["user"]["def"]
 			insert_data = []
-			for user_id in user.keys():
+			for idx, user_id in enumerate(user.keys()):
 				user_data = {
-					"id": user_id,
+					"id": idx,
+					"user_id": user_id,
 					"name": user_id,
-					"admin": False
+					"admin": False,
+					"is_active": True
 				}
 				for auth_key in user[user_id].keys():
 					record = {

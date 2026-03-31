@@ -38,10 +38,18 @@
 		<column key="manage_sales" type="bool" role="ref,up" />
 	</table>
 	<table id="tbl_account" db="db_control">
-		<column key="id" type="text" role="ref,key" />
+		<column key="id" type="int" role="ref,key" />
+		<column key="user_id" type="text" role="ref,up" />
 		<column key="password" type="text" role="ref,up" />
 		<column key="name" type="text" role="ref,up" />
 		<column key="admin" type="bool" role="ref,up" />
+		<column key="is_active" type="bool" role="ref,up" />
+	</table>
+	<table id="tbl_account_token" db="db_control">
+		<column key="id" type="text" role="ref,key" />
+		<column key="token" type="text" role="ref,up" />
+		<column key="expires_at" type="text" role="ref,up" />
+		<column key="revoked" type="bool" role="ref,up" />
 	</table>
 	<table id="tbl_account_settings" db="db_control">
 		<column key="id" type="text" role="ref,key" />
