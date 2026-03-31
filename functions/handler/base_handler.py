@@ -6,6 +6,7 @@ import jwt
 import traceback
 import threading
 import urllib.parse
+import pyotp
 from datetime import datetime, timedelta, timezone
 from collections import OrderedDict
 from tornado import web, escape
@@ -196,9 +197,35 @@ class BaseHandler(web.RequestHandler):
         raise web.HTTPError(http_cd, log_message=self.get_message(msg_cd, msg_prm))
 
     def set_http_status(self, http_cd, msg_cd=None, msg_prm=[]):
+        """
+        HTTPステータスコード設定処理
+        
+        Parameters
+        ----------
+        http_cd : int
+            HTTPステータスコード
+        msg_cd : string
+            メッセージコード
+        msg_prm : array, default []
+            メッセージ付随情報
+        """
         self.set_status(http_cd, reason=self.get_message(msg_cd, msg_prm) if msg_cd is not None else None)
     
     def return_error_json(self, http_cd, msg_cd, msg_prm=[], details={}):
+        """
+        エラー発生時用JSON応答処理
+        
+        Parameters
+        ----------
+        http_cd : int
+            HTTPステータスコード
+        msg_cd : string
+            メッセージコード
+        msg_prm : array, default []
+            メッセージ付随情報
+        details :  dict, default {}
+            エラー詳細を項目名(key)と詳細(value)で定義
+        """
         self.set_http_status(http_cd, msg_cd, msg_prm)
         result = {
             "error": {
@@ -216,6 +243,19 @@ class BaseHandler(web.RequestHandler):
         self.view_json(result)
 
     def create_token(self, param):
+        """
+        トークン生成処理
+        
+        Parameters
+        ----------
+        param : string
+            トークン付随情報
+        
+        Returns
+        -------
+        string
+            トークン
+        """
         payload = {
             "sub": param,
             "exp": datetime.now(timezone.utc) + timedelta(hours=1),
@@ -224,13 +264,44 @@ class BaseHandler(web.RequestHandler):
         return jwt.encode(payload, options.secrets_key, algorithm="HS256")
 
     def extract_token(self):
+        """
+        トークン取得処理
+        
+        Returns
+        -------
+        string
+            トークン
+        """
         header = self.request.headers.get("Authorization", "")
         return header.removeprefix("Bearer ") or None
 
     def verify_token(self, token):
+        """
+        トークン認証処理
+        
+        Parameters
+        ----------
+        token : string
+            トークン
+        
+        Returns
+        -------
+        boolean
+            認証結果(True : 認証成功、False : 認証失敗)
+        """
         return jwt.decode(token, options.secrets_key, algorithms=["HS256"]).get("sub")
     
     def refresh_token(self, user_id, token):
+        """
+        トークン有効期限更新処理
+        
+        Parameters
+        ----------
+        user_id : user_id
+            ユーザーID
+        token : string
+            トークン
+        """
         self.ctrl_db["db_control"].insert("tbl_account_token", [{
             "id": user_id,
             "token": token,
@@ -239,6 +310,14 @@ class BaseHandler(web.RequestHandler):
         }], True)
     
     def invalidate_token(self, user_id):
+        """
+        トークン無効化処理
+        
+        Parameters
+        ----------
+        token : user_id
+            ユーザーID
+        """
         self.ctrl_db["db_control"].update("tbl_account_token", {
             "revoked": True
         }, {
@@ -246,12 +325,74 @@ class BaseHandler(web.RequestHandler):
         })
 
     def check_token_revoked(self, token):
+        """
+        トークン無効状態確認処理
+        
+        Parameters
+        ----------
+        token : string
+            トークン
+        
+        Returns
+        -------
+        boolean
+            確認結果(True : 無効化済み、False : 有効)
+        """
         result = self.ctrl_db["db_control"].select("tbl_account_token", dict_select={
             "token": token
         })
         if len(result) == 0 or result[0]["revoked"] or datetime.strptime(result[0]["expires_at"], "%Y-%m-%d %H:%M:%S") < datetime.now():
             return True
         return False
+    
+    def create_secret(self):
+        """
+        シークレットキー生成処理
+        
+        Returns
+        -------
+        string
+            シークレットキー
+        """
+        return pyotp.random_base32()
+    
+    def create_secret_uri(self, secret, user_id):
+        """
+        シークレット登録用URI生成処理
+        
+        Parameters
+        ----------
+        secret : string
+            シークレットキー
+        user_id : string
+            ユーザーID
+        
+        Returns
+        -------
+        string
+            シークレット登録用URI
+        """
+        totp = pyotp.TOTP(secret)
+        return totp.provisioning_uri(name=user_id, issuer_name=options.site_title)
+    
+    def verify_secret(self, secret, code):
+        """
+        MFAコード認証処理
+        
+        Parameters
+        ----------
+        secret : string
+            シークレットキー
+        code : string
+            クライアントから受け取ったコード
+        
+        Returns
+        -------
+        boolean
+            認証結果(True : 認証成功、False : 認証失敗)
+        """
+        totp = pyotp.TOTP(secret)
+        return totp.verify(code)
 
     def get_cookie_value(self, key):
         """
@@ -342,6 +483,11 @@ class BaseHandler(web.RequestHandler):
     def get_operation_id(self):
         """
         操作ID取得処理
+
+        Returns
+        -------
+        string
+            操作ID
         """
         operation_id = self.prm_req.get("_xsrf")
         if operation_id is None:
