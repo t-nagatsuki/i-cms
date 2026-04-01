@@ -7,6 +7,9 @@ import traceback
 import threading
 import urllib.parse
 import pyotp
+import qrcode
+import base64
+from io import BytesIO
 from datetime import datetime, timedelta, timezone
 from collections import OrderedDict
 from tornado import web, escape
@@ -97,9 +100,9 @@ class BaseHandler(web.RequestHandler):
                 if param == "":
                     break
                 key = param.split("=")
-                self.prm_get[key[0]] = self.get_query_argument(key[0])
+                self.prm_get[key[0]] = self.get_query_arguments(key[0])
             for key in self.request.arguments.keys():
-                self.prm_req[key] = self.get_argument(key)
+                self.prm_req[key] = self.get_arguments(key)
             self.prm_file = OrderedDict()
             for key in self.request.files.keys():
                 self.prm_file[key] = self.request.files[key]
@@ -194,6 +197,23 @@ class BaseHandler(web.RequestHandler):
         self.finish()
 
     def raise_http_error(self, http_cd, msg_cd, msg_prm=[]):
+        """
+        HTTPエラー例外生成処理
+        
+        Parameters
+        ----------
+        http_cd : int
+            HTTPステータスコード
+        msg_cd : string
+            メッセージコード
+        msg_prm : array, default []
+            メッセージ付随情報
+        
+        Raises
+        -------
+        HTTPError
+            HTTPエラー例外
+        """
         raise web.HTTPError(http_cd, log_message=self.get_message(msg_cd, msg_prm))
 
     def set_http_status(self, http_cd, msg_cd=None, msg_prm=[]):
@@ -374,6 +394,28 @@ class BaseHandler(web.RequestHandler):
         """
         totp = pyotp.TOTP(secret)
         return totp.provisioning_uri(name=user_id, issuer_name=options.site_title)
+    
+    def create_qrcode(self, data):
+        """
+        QRコード生成処理
+        
+        Parameters
+        ----------
+        data : string
+            QRコード格納データ
+        
+        Returns
+        -------
+        string
+            Base64エンコードされたURI
+        """
+        qr = qrcode.QRCode(box_size=10, border=4)
+        qr.add_data(data)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        return base64.b64encode(buffered.getvalue()).decode("utf-8")
     
     def verify_secret(self, secret, code):
         """

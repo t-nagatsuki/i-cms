@@ -8,3 +8,6 @@ openpyxl
 paramiko
 python-dateutil
 sshtunnel
+PyJWT
+pyotp
+qrcode
