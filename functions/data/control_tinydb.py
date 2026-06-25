@@ -87,6 +87,8 @@ class ControlTinyDB(ControlBase):
 		if not tbl_id in self.tables.keys():
 			print("指定されたテーブル「{0}」は該当のデータベースに存在しません。".format(tbl_id))
 			return []
+
+		def_tbl = self.tables[tbl_id]
 		
 		table = self.db.table(tbl_id)
 		if not dict_select:
@@ -94,11 +96,29 @@ class ControlTinyDB(ControlBase):
 		else:
 			q = Query()
 			cond = None
-			for k, v in dict_select.items():
-				if cond is None:
-					cond = (q[k] == v)
+			for key in def_tbl.get("column", []):
+				if key.get("key", "") == "" or not key["key"] in dict_select.keys():
+					continue
+				c = None
+				v = dict_select[key["key"]]
+				if key["role"] == "join":
+					continue
+				elif key["role"] == "like":
+					k = key["base_key"]
+					if v.startswith("%") and v.endswith("%"):
+						c = (q[k].search(v[1:-1]))
+					elif not v.startswith("%") and v.endswith("%"):
+						c = (q[k].matches(f"^{v[:-1]}"))
+					elif v.startswith("%") and not v.endswith("%"):
+						c = (q[k].matches(f"{v[1:]}$"))
 				else:
-					cond &= (q[k] == v)
+					k = key["key"]
+					v = dict_select[k]
+					c = (q[k] == v)
+				if cond is None:
+					cond = c
+				else:
+					cond &= c
 			results = table.search(cond)
 		
 		if lst_exclude:
