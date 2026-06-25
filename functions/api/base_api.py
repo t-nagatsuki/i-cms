@@ -28,6 +28,12 @@ class BaseApi():
             "message": handler.get_message("CE-0002")
         })
 
+    def patch_response(self, handler, args):
+        handler.set_http_status(404)
+        handler.view_json({
+            "message": handler.get_message("CE-0002")
+        })
+
     def delete_response(self, handler, args):
         handler.set_http_status(404)
         handler.view_json({

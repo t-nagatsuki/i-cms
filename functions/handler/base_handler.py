@@ -109,7 +109,10 @@ class BaseHandler(web.RequestHandler):
 
             # 初期設定の要否確認
             self.lock.acquire()
-            tbl_setting = self.ctrl_db["db_control"].select("tbl_setting")
+            try:
+                tbl_setting = self.ctrl_db["db_control"].select("tbl_setting")
+            except:
+                tbl_setting = []
             if len(tbl_setting) == 0:
                 InitializeData.exec(self)
             self.lock.release()
@@ -121,6 +124,7 @@ class BaseHandler(web.RequestHandler):
             print(e)
             self.append_message("CE-9999", [str(e)])
             for m in str(traceback.format_exc()).splitlines():
+                print(m)
                 self.append_message("", [m], "alert")
             self.is_error = True
 
@@ -131,31 +135,37 @@ class BaseHandler(web.RequestHandler):
         # DBクローズ
         self.ctrl_db.__del__()
 
-    def get(self):
+    def get(self, *args):
         """
         GETリクエスト処理
         """
-        self.proc_access("get")
+        self.proc_access("get", args)
 
-    def post(self):
+    def post(self, *args):
         """
         POSTリクエスト処理
         """
-        self.proc_access("post")
+        self.proc_access("post", args)
 
-    def put(self):
+    def put(self, *args):
         """
         PUTリクエスト処理
         """
-        self.proc_access("put")
+        self.proc_access("put", args)
 
-    def delete(self):
+    def patch(self, *args):
+        """
+        PUTリクエスト処理
+        """
+        self.proc_access("patch", args)
+
+    def delete(self, *args):
         """
         DELETEリクエスト処理
         """
-        self.proc_access("delete")
+        self.proc_access("delete", args)
 
-    def proc_access(self, mode):
+    def proc_access(self, mode, args):
         """
         共通リクエスト処理
         """
@@ -277,7 +287,7 @@ class BaseHandler(web.RequestHandler):
             トークン
         """
         payload = {
-            "sub": param,
+            "sub": str(param),
             "exp": datetime.now(timezone.utc) + timedelta(hours=1),
             "iat": datetime.now(timezone.utc)
         }
@@ -481,6 +491,25 @@ class BaseHandler(web.RequestHandler):
         def_message = self.ctrl_define["message"]["def"].get(msg_cd, {})
         return def_message.get("text", f"[{msg_cd}] メッセージ未定義").format(msg_prm)
 
+    def append_message(self, msg_cd, msg_prm=[], msg_type="normal"):
+        """
+        メッセージ追加処理（基底実装）
+
+        PageHandler等のサブクラスで画面表示用にオーバーライドされる。
+        基底クラスではログ出力のみ行う。
+
+        Parameters
+        ----------
+        msg_cd : string
+            メッセージコード
+        msg_prm : list of string, default []
+            メッセージに埋め込むパラメータ配列
+        msg_type : string, default normal
+            メッセージ種別(alert,warning,normal,debug)
+        """
+        message = self.get_message(msg_cd, msg_prm) if msg_cd else " ".join(msg_prm)
+        self.append_log(message, msg_type)
+
     def append_log(self, message, msg_type="normal"):
         """
         APPログ出力処理
@@ -574,8 +603,8 @@ class BaseHandler(web.RequestHandler):
         for record in self.ctrl_db["db_control"].select("mst_auth"):
             result[record["function"]] = {
                 "id": record["function"],
-                "name": record["auth_name"],
-                "ref_name": record["auth_name"]
+                "name": record["name"],
+                "ref_name": record["name"]
             }
         return result
 
@@ -603,23 +632,22 @@ class BaseHandler(web.RequestHandler):
                 return False
         except jwt.PyJWTError:
             return False
-        
+
         self.refresh_token(user_id, token)
 
         # ユーザ情報読込
         data_account = self.ctrl_db["db_control"].select("tbl_account", dict_select={
-            "user_id": user_id
+            "id": user_id
         })
         if len(data_account) > 0:
             self.prm_cmn["admin"] = data_account[0]["admin"]
         else:
             return False
 
-        self.prm_cmn["auth"] = self.get_account_auth(user_id)
         self.prm_cmn["account_id"] = user_id
         self.prm_cmn["token"] = token
-        self.prm_cmn["account_data"] = data_account
-        self.prm_cmn["account_auth"] = self.get_account_auth(user_id)
+        self.prm_cmn["account_data"] = data_account[0]
+        self.prm_cmn["account_auth"] = [k for k, v in self.get_account_auth(user_id).items() if v is True or v == 1]
         self.prm_cmn["account_settings"] = self.get_account_settings(user_id)
 
         return True

@@ -80,19 +80,22 @@ class BasePage():
                 dict["B_{0}".format(key[0])] = val
         return dict
 
-    def get_view(self, handler):
-        self.view(handler)
+    def get_view(self, handler, args):
+        self.view(handler, args)
 
-    def post_view(self, handler):
-        self.view(handler)
+    def post_view(self, handler, args):
+        self.view(handler, args)
 
-    def put_view(self, handler):
-        self.view(handler)
+    def put_view(self, handler, args):
+        self.view(handler, args)
 
-    def delete_view(self, handler):
-        self.view(handler)
+    def patch_view(self, handler, args):
+        self.view(handler, args)
 
-    def view(self, handler):
+    def delete_view(self, handler, args):
+        self.view(handler, args)
+
+    def view(self, handler, args):
         lst_obj = []
         if handler.prm_cmn.get("define_page") is not None:
             self.append_obj(handler.prm_cmn["define_page"].get("obj", []), lst_obj)

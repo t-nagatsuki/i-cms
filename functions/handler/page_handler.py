@@ -31,7 +31,7 @@ class PageHandler(BaseHandler):
 			self.prm_cmn["color_role"][lv] = self.ctrl_define["message_lv"]["def"][lv].get("value", "")
 			self.prm_cmn["message"][lv] = []
 
-	def proc_access(self, mode):
+	def proc_access(self, mode, args):
 		try:
 			if self.is_error:
 				self.render("base.html", prm_cmn=self.prm_cmn)
@@ -55,19 +55,21 @@ class PageHandler(BaseHandler):
 							self.proc_page(mode)
 							return
 						self.append_access_hist()
-					if page.need_auth != "" and not self.prm_cmn.get("auth", {}).get(page.need_auth, False):
+					if page.need_auth != "" and not page.need_auth in self.prm_cmn["account_auth"]:
 						self.append_message("CE-0005", [key])
 						self.prm_req["page"] = page.back_page_auth
 						self.proc_page(mode)
 						return
 					if mode == "get":
-						page.get_view(self)
+						page.get_view(self, args)
 					elif mode == "post":
-						page.post_view(self)
+						page.post_view(self, args)
 					elif mode == "put":
-						page.put_view(self)
+						page.put_view(self, args)
+					elif mode == "pacth":
+						page.patch_view(self, args)
 					elif mode == "delete":
-						page.delete_view(self)
+						page.delete_view(self, args)
 					return
 			self.append_message("CE-0006", [key])
 			self.render("common/error.html", prm_cmn=self.prm_cmn, prm_req=self.prm_req)

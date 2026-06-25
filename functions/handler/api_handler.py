@@ -28,30 +28,6 @@ class ApiHandler(BaseHandler):
         except json.JSONDecodeError:
             self.prm_body = {}
 
-    def get(self, *args):
-        """
-        GETリクエスト処理
-        """
-        self.proc_access("get", args)
-
-    def post(self, *args):
-        """
-        POSTリクエスト処理
-        """
-        self.proc_access("post", args)
-
-    def put(self, *args):
-        """
-        PUTリクエスト処理
-        """
-        self.proc_access("put", args)
-
-    def delete(self, *args):
-        """
-        DELETEリクエスト処理
-        """
-        self.proc_access("delete", args)
-
     def proc_access(self, mode, args):
         try:
             if self.is_error:
@@ -89,7 +65,7 @@ class ApiHandler(BaseHandler):
                         })
                         return
                     self.append_access_hist()
-                if page.need_auth != "" and not self.prm_cmn.get("auth", {}).get(page.need_auth, False):
+                if page.need_auth != "" and not page.need_auth in self.prm_cmn["account_auth"]:
                     self.set_http_status(401)
                     self.view_json({
                         "error": {
@@ -104,6 +80,8 @@ class ApiHandler(BaseHandler):
                     page.post_response(self, args)
                 elif mode == "put":
                     page.put_response(self, args)
+                elif mode == "patch":
+                    page.patch_response(self, args)
                 elif mode == "delete":
                     page.delete_response(self, args)
                 return
@@ -127,7 +105,7 @@ class ApiHandler(BaseHandler):
         except Exception as e:
             self.append_log(self.prm_cmn.get("account_id", "Non Login"), "alert")
             print(e)
-            #print(traceback.format_exc())
+            print(traceback.format_exc())
             self.set_http_status(500, "CE-9999", [str(e)])
             self.view_json({
                 "error": {
