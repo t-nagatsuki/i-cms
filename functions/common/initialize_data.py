@@ -27,7 +27,10 @@ class InitializeData():
 		try:
 			handler.ctrl_db["db_control"].begin()
 			# 初期化
-			handler.ctrl_db["db_control"].delete("tbl_setting")
+			for db in handler.ctrl_db.keys():
+				for tbl in handler.ctrl_db[db].tables.keys():
+					handler.ctrl_db[db].drop_table(tbl)
+					handler.ctrl_db[db].create_table(tbl)
 
 			# 基本設定
 			handler.ctrl_db["db_control"].insert("tbl_setting", [
@@ -61,9 +64,6 @@ class InitializeData():
 				}
 			])
 
-			# 告知設定
-			#tbl_notice = handler.db_ctrl.table("tbl_notice")
-			
 			# グループ設定
 			grp_id = str(uuid.uuid4())
 			handler.ctrl_db["db_control"].insert("tbl_group", [{
@@ -73,6 +73,15 @@ class InitializeData():
 			}])
 			
 			# 権限設定
+			insert_data = []
+			for auth in handler.ctrl_define["auth"]["def"].values():
+				insert_data.append({
+					"id": auth.get("id"),
+					"name": auth.get("name"),
+					"function": auth.get("ref_name"),
+					"operation": auth.get("operation"),
+				})
+			handler.ctrl_db["db_control"].insert("mst_auth", insert_data)
 			user = handler.ctrl_define["user"]["def"]
 			insert_data = []
 			for idx, user_id in enumerate(user.keys()):
@@ -85,7 +94,7 @@ class InitializeData():
 				}
 				for auth_key in user[user_id].keys():
 					record = {
-						"id": user_id
+						"id": idx
 					}
 					if auth_key == "id":
 						continue
