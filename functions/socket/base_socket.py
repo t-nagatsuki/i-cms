@@ -15,7 +15,7 @@ class BaseSocket():
         """
         コンストラクタ
         """
-        self.handler_url = "socket"
+        self.handler_url = "/socket"
         self.socket_handler = []
 
     def exec_process(self, handler, message):

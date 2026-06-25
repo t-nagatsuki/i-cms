@@ -8,9 +8,9 @@ class Page(BasePage):
 		self.page_handler.extend(["index", "login", "logout", "account_delete"])
 		self.need_login = False
 
-	def post_view(self, handler):
+	def post_view(self, handler, args):
 		# ポータル設定読込
-		self.check_login(handler)
+		self.check_login()
 		lst_menu = []
 		for page in handler.pages:
 			if page.portal_menu is None:
@@ -34,7 +34,7 @@ class Page(BasePage):
 			self.account_delete(handler)
 			self.logout(handler)
 		else:
-			self.check_login(handler)
+			self.check_login()
 
 		handler.prm_cmn["lst_notice"] = handler.ctrl_db["db_control"].select("tbl_notice")
 		handler.prm_cmn["lst_update"] = handler.ctrl_db["db_control"].select("tbl_update")

@@ -7,16 +7,7 @@ sys.path.append(os.path.dirname(__file__))
 
 import win32serviceutil
 import win32service
-import win32event
-import servicemanager
-import socket
 import subprocess
-
-from glob import glob
-from importlib import import_module
-from tornado import ioloop, httpserver, web, options
-from tornado.log import app_log
-from tornado.options import options
 
 class CmsService(win32serviceutil.ServiceFramework):
 	_svc_name_ = "i-cms-service"

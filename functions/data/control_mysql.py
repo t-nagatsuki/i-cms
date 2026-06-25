@@ -89,7 +89,7 @@ class ControlMysql(ControlBase):
 		"""
 		return self.exec_sql(super().get_drop_table_sql(tbl_id))
 
-	def select(self, tbl_id, dict_select={}, lst_exclude=[], fixed_where=[]):
+	def select(self, tbl_id, dict_select={}, lst_exclude=[], fixed_where=[], sort_order=[]):
 		"""
 		レコード取得処理
 
@@ -105,7 +105,7 @@ class ControlMysql(ControlBase):
 		fixed_where : list of string default []
 			固定WHERE区配列。
 		"""
-		return self.exec_sql(super().get_select_sql(tbl_id, dict_select, lst_exclude, fixed_where))
+		return self.exec_sql(super().get_select_sql(tbl_id, dict_select, lst_exclude, fixed_where, sort_order))
 
 	def distinct(self, tbl_id, lst_select=[], dict_select={}):
 		"""

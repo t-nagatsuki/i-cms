@@ -21,7 +21,8 @@ class LoadOptions():
 		define("ssl_port", default=443, type=int)
 		define("multi_thread", default=False, type=bool)
 		define("thread", default=0, type=int)
-		define("cookie_key", default="doll")
+		define("cookie_key", default="i-cms", help="Cookieの暗号化キー")
+		define("secrets_key", default="12345678901234567890123456789012", help="JWTの暗号化キー")
 
 		define("template_path", default="templates")
 		define("static_path", default="static")

@@ -2,13 +2,6 @@
 
 from tornado import escape, template
 from tornado.options import options
-from functions.common.util_encrypt import UtilEncrypt
-
-try:
-    if options.ldap:
-        from functions.common.control_ldap import ControlLdap
-except:
-    pass
 
 class BasePage():
     """
@@ -45,7 +38,7 @@ class BasePage():
         """
         コンストラクタ
         """
-        self.handler_url = ""
+        self.handler_url = "/"
         self.page_handler = []
         self.portal_menu = None
         self.maintenance_use = False
@@ -87,19 +80,22 @@ class BasePage():
                 dict["B_{0}".format(key[0])] = val
         return dict
 
-    def get_view(self, handler):
-        self.view(handler)
+    def get_view(self, handler, args):
+        self.view(handler, args)
 
-    def post_view(self, handler):
-        self.view(handler)
+    def post_view(self, handler, args):
+        self.view(handler, args)
 
-    def put_view(self, handler):
-        self.view(handler)
+    def put_view(self, handler, args):
+        self.view(handler, args)
 
-    def delete_view(self, handler):
-        self.view(handler)
+    def patch_view(self, handler, args):
+        self.view(handler, args)
 
-    def view(self, handler):
+    def delete_view(self, handler, args):
+        self.view(handler, args)
+
+    def view(self, handler, args):
         lst_obj = []
         if handler.prm_cmn.get("define_page") is not None:
             self.append_obj(handler.prm_cmn["define_page"].get("obj", []), lst_obj)
@@ -144,88 +140,3 @@ class BasePage():
                 lst_obj.append("</{0}>".format(
                     obj["tag"]
                 ))
-
-    def check_ldap(self, user_id, user_password):
-        # LDAP情報読込
-        if not options.ldap:
-            return None
-        ldap = ControlLdap()
-        if not ldap.connect("ht", user_id, user_password):
-            return None
-        return ldap.get_user_name()
-
-    def check_login(self, handler):
-        user_id = handler.prm_cmn.get("account_id", "")
-        input_password = handler.prm_cmn.get("account_password", "")
-
-        # ユーザ情報読込
-        data_account = self.get_account(handler, user_id, input_password)
-        if data_account is not None:
-            handler.prm_cmn["admin"] = data_account["admin"]
-        else:
-            return False
-
-        handler.prm_cmn["auth"] = self.get_auth(handler, user_id)
-        handler.prm_cmn["account_id"] = user_id
-        handler.prm_cmn["account_password"] = input_password
-        handler.prm_cmn["account_data"] = data_account
-        handler.prm_cmn["account_auth"] = self.get_auth(handler, user_id)
-        handler.prm_cmn["account_settings"] = self.get_account_settings(handler, user_id)
-
-        return True
-
-    def admin_view(self, handler):
-        handler.render("admin/{0}.html".format(handler.prm_req.get("page", "index")), prm_cmn=handler.prm_cmn, prm_req=handler.prm_req)
-
-    def admin_check_login(self, handler):
-        user_id = handler.prm_cmn.get("admin_account_id", "")
-        input_password = handler.prm_cmn.get("admin_account_password", "")
-
-        # ユーザ情報読込
-        data_account = self.get_account(handler, user_id, input_password)
-        if data_account is None:
-            return False
-        handler.prm_cmn["admin_account_name"] = data_account["name"]
-        handler.prm_cmn["admin"] = data_account["admin"]
-        handler.prm_cmn["admin_login"] = True
-
-        handler.prm_cmn["auth"] = self.get_auth(handler, user_id)
-        handler.prm_cmn["account_settings"] = self.get_account_settings(handler, user_id)
-
-        return True
-
-    def get_account(self, handler, user_id, input_password):
-        result = handler.ctrl_db["db_control"].select("tbl_account", dict_select={
-            "id": user_id,
-            "password": UtilEncrypt.encrypt_xor(input_password, options.encrypt_key)
-        })
-        if len(result) == 0:
-            return None
-        return result[0]
-
-    def get_auth(self, handler, user_id):
-        result = {}
-        for record in handler.ctrl_db["db_control"].select("tbl_auth", dict_select={
-            "id": user_id
-        }):
-            result[record["function"]] = record["auth_value"]
-        lst_affiliation = []
-        for r in handler.ctrl_db["db_control"].select("tbl_group_affiliation", dict_select={
-            "account_id": user_id
-        }):
-            lst_affiliation.append(r["group_id"])
-        for group_id in lst_affiliation:
-            for record in handler.ctrl_db["db_control"].select("tbl_group_auth", dict_select={
-                "id": group_id
-            }):
-                if record["auth_value"]:
-                    result[record["function"]] = record["auth_value"]
-        return result
-
-    def get_account_settings(self, handler, user_id):
-        result = {}
-        for r in handler.ctrl_db["db_control"].select("tbl_account_settings", dict_select={
-            "id": user_id
-        }):
-            result[r["setting_key"]] = r["setting_value"]
-        return result

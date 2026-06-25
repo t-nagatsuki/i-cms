@@ -87,7 +87,7 @@ class ControlSqlite(ControlBase):
 		"""
 		return self.exec_sql(super().get_drop_table_sql(tbl_id))
 
-	def select(self, tbl_id, dict_select={}, lst_exclude=[], fixed_where=[]):
+	def select(self, tbl_id, dict_select={}, lst_exclude=[], fixed_where=[], sort_order=[]):
 		"""
 		レコード取得処理
 
@@ -103,7 +103,7 @@ class ControlSqlite(ControlBase):
 		fixed_where : list of string default []
 			固定WHERE区配列。
 		"""
-		return self.exec_sql(super().get_select_sql(tbl_id, dict_select, lst_exclude, fixed_where))
+		return self.exec_sql(super().get_select_sql(tbl_id, dict_select, lst_exclude, fixed_where, sort_order))
 
 	def distinct(self, tbl_id, lst_select=[], dict_select={}):
 		"""
@@ -134,10 +134,61 @@ class ControlSqlite(ControlBase):
 			[{ "key1" : "value1", "key2" : "value2"}]のようにキー項目と値を設定する。
 		"""
 		result = []
-		for sql in super().get_insert_sql(tbl_id, lst_insert, is_upsert):
+		for sql in self.get_insert_sql(tbl_id, lst_insert, is_upsert):
 			result.extend(self.exec_sql(sql))
 		return result
 
+	def get_insert_sql(self, tbl_id, lst_insert, is_upsert=False):
+		"""
+		レコード挿入SQL生成処理
+
+		Parameters
+		----------
+		tbl_id : string
+			テーブルID
+		lst_insert : list of dict
+			挿入情報配列。
+			[{ "key1" : "value1", "key2" : "value2"}]のようにキー項目と値を設定する。
+		"""
+		if not tbl_id in self.tables.keys():
+			return None
+		def_tbl = self.tables[tbl_id]
+		result = []
+		for record in lst_insert:
+			col_text = []
+			set_text = []
+			key_text = []
+			update_text = []
+			is_id = False
+			for key in def_tbl.get("column", []):
+				if "join" in key["role"] or "like" in key["role"] or key.get("key", "") == "":
+					continue
+				if key.get("key") == "id":
+					is_id = True
+				k = key['key']
+				v = super().set_value_text(key, record)
+				if "key" in key["role"]:
+					key_text.append(f"`{k}`")
+				else:
+					update_text.append(f"`{k}` = {v}")
+				col_text.append(f"`{k}`")
+				set_text.append(v)
+			sql = ["insert into {0} ({1}) values ({2})".format(
+				tbl_id,
+				", ".join(col_text),
+				", ".join(set_text)
+			)]
+			if is_upsert:
+				sql.append(" on conflict (")
+				sql.append(", ".join(key_text))
+				sql.append(") do update set ")
+				sql.append(", ".join(update_text))
+			if is_id:
+				sql.append(" returning `id` ")
+			sql.append(";")
+			result.append("".join(sql))
+		return result
+	
 	def update(self, tbl_id, dict_update, dict_where={}):
 		"""
 		レコード更新処理
