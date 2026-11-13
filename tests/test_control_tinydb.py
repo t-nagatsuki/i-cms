@@ -55,6 +55,52 @@ class TestControlTinyDB(TestCase):
 		result = self.ctrl_base.select("tbl_account", {"id": "test1"})
 		self.assertEqual(len(result), 0)
 
+	def test_increment(self):
+		"""加算処理: 未設定は0扱い、WHERE条件に一致する行のみ加算する
+
+		テスト用テーブル定義に整数列がないため、admin列（bool）へ数値の初期値を入れて検証する。
+		insert()経由だとbool列の値がTrue/Falseへ正規化されるため、TinyDBのテーブルへ直接入れる
+		（SQLite版のテストが生SQLで入れるのと同じ理由）。
+		"""
+		self.ctrl_base.db.table("tbl_account").insert_multiple([
+			{"id": "a", "name": "A"},                      # 未設定（Noneでもない）
+			{"id": "b", "name": "B", "admin": 5},
+			{"id": "c", "name": "C", "admin": None},       # None
+		])
+
+		self.ctrl_base.increment("tbl_account", {"admin": 1}, {"id": "a"})
+		self.assertEqual(self.ctrl_base.select("tbl_account", {"id": "a"})[0]["admin"], 1)
+
+		# 既存値へ加算され、条件外の行は変化しない
+		self.ctrl_base.increment("tbl_account", {"admin": 2}, {"id": "b"})
+		self.assertEqual(self.ctrl_base.select("tbl_account", {"id": "b"})[0]["admin"], 7)
+		self.assertEqual(self.ctrl_base.select("tbl_account", {"id": "a"})[0]["admin"], 1)
+
+		# NoneはSQL実装のcoalesceと同じく0扱い
+		self.ctrl_base.increment("tbl_account", {"admin": 1}, {"id": "c"})
+		self.assertEqual(self.ctrl_base.select("tbl_account", {"id": "c"})[0]["admin"], 1)
+
+	def test_values_are_normalized_to_column_types(self):
+		"""書き込む値・条件の値を列定義の型へそろえ、SQL系のDBと同じく型の違う値でも一致させる
+
+		TinyDBは条件を型まで比較するため（0 と "0" は一致しない）、text列は文字列、
+		bool列は真偽値へそろえる。
+		"""
+		# text列（id）へ数値を書き込んでも文字列で保存され、数値・文字列のどちらの条件でも一致する
+		self.ctrl_base.insert("tbl_account", [{"id": 0, "name": "A", "admin": "1"}])
+		self.assertEqual(self.ctrl_base.db.table("tbl_account").all()[0]["id"], "0")
+		self.assertEqual(len(self.ctrl_base.select("tbl_account", {"id": 0})), 1)
+		self.assertEqual(len(self.ctrl_base.select("tbl_account", {"id": "0"})), 1)
+		self.assertEqual(len(self.ctrl_base.select("tbl_account", {"id": [0, 9]})), 1)
+		# bool列は"1"・"false"等を真偽値として保存・比較する
+		self.assertIs(self.ctrl_base.db.table("tbl_account").all()[0]["admin"], True)
+		self.assertEqual(len(self.ctrl_base.select("tbl_account", {"admin": "true"})), 1)
+		# 更新・加算・削除の条件も同じくそろえる
+		self.ctrl_base.update("tbl_account", {"name": "B"}, {"id": 0})
+		self.assertEqual(self.ctrl_base.select("tbl_account", {"id": "0"})[0]["name"], "B")
+		self.ctrl_base.delete("tbl_account", [{"id": 0}])
+		self.assertEqual(self.ctrl_base.select("tbl_account"), [])
+
 	def test_distinct(self):
 		self.ctrl_base.insert("tbl_account", [
 			{"id": "a", "name": "Same", "admin": "0"},
@@ -66,6 +112,39 @@ class TestControlTinyDB(TestCase):
 		self.assertEqual(len(result), 2)
 		names = sorted([r["name"] for r in result])
 		self.assertEqual(names, ["Diff", "Same"])
+
+	def test_select_list_condition_is_in(self):
+		"""リスト指定はIN条件として扱う（SQLite・MySQL実装に合わせる）
+
+		値の一致比較のままでは常に0件になり、複数IDでの絞り込みを行うAPI
+		（PRJ001・IAE001・ORG004等）が結果を返さない。
+		"""
+		self.ctrl_base.insert("tbl_account", [
+			{"id": "a", "password": "p", "name": "A", "admin": "0"},
+			{"id": "b", "password": "p", "name": "B", "admin": "0"},
+			{"id": "c", "password": "p", "name": "C", "admin": "1"},
+		])
+
+		result = self.ctrl_base.select("tbl_account", {"id": ["a", "c"]})
+		self.assertEqual(sorted(r["id"] for r in result), ["a", "c"])
+
+		# 他の条件とAND結合できる
+		result = self.ctrl_base.select(
+			"tbl_account", {"id": ["a", "c"], "admin": "1"})
+		self.assertEqual([r["id"] for r in result], ["c"])
+
+		# 空リストは該当なし
+		self.assertEqual(
+			self.ctrl_base.select("tbl_account", {"id": []}), [])
+
+		# スカラー指定は従来どおり一致比較
+		result = self.ctrl_base.select("tbl_account", {"id": "b"})
+		self.assertEqual([r["id"] for r in result], ["b"])
+
+		# IN展開の対象はlistのみ（ControlBase.__append_conditionと揃える）。
+		# tuple・setはSQL実装でもIN展開されないため、ここでも展開しない
+		self.assertEqual(
+			self.ctrl_base.select("tbl_account", {"id": ("a", "c")}), [])
 
 if __name__ == "__main__":
     import unittest
